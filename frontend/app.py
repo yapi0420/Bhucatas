@@ -1500,7 +1500,6 @@ def render_auth():
     else:
         st.sidebar.markdown("### 🔐 登录 / 注册")
         auth_mode = st.sidebar.radio("选择操作", ["登录","注册","找回密码"], horizontal=True, label_visibility="collapsed")
-
         if auth_mode == "登录":
             u = st.sidebar.text_input("用户名", key="login_u")
             p = st.sidebar.text_input("密码", type="password", key="login_p")
@@ -1545,8 +1544,6 @@ def render_auth():
 
         else:  # 找回密码
             st.sidebar.info("请联系管理员重置密码\n📧 catadmin@beihua.edu.cn")
-
-
 # ============================================
 # 📄 页面：评论广场
 # ============================================
