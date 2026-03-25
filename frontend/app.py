@@ -1655,6 +1655,7 @@ def main():
                                   index=nav_pages.index(st.session_state.page) if st.session_state.page in nav_pages else 0,
                                   label_visibility="collapsed")
 
+
     # 如果不是从详情页过来，更新page
     if st.session_state.page != "📖 猫猫详情":
         st.session_state.page = selected

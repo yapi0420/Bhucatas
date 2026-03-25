@@ -213,6 +213,7 @@ class ApiClient:
     # ════════════════════════════════
     #  收藏
     # ════════════════════════════════
+
     def my_favorites(self) -> list:
         return self._get("/api/favorites") or []
 
