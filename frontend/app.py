@@ -58,7 +58,7 @@ st.sidebar.markdown("---")
 st.sidebar.markdown("""
 <div style="text-align:center;padding:10px;color:#c2185b;font-size:0.85em;">
     <p>🐱 用爱守护每一只校园猫咪</p>
-    <p style="color:#ddd;">© 2024 北华大学猫猫校园</p>
+    <p style="color:#ddd;">© 2026 北华大学猫猫校园</p>
     <p style="font-size:0.8em;color:#ccc;">Streamlit + FastAPI</p>
 </div>
 """, unsafe_allow_html=True)
