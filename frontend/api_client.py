@@ -1,19 +1,21 @@
 """
 API Client — 封装所有后端 HTTP 请求
-Streamlit 前端通过此模块与 FastAPI 后端通信
+修正：BASE_URL 从 config.py 导入，避免重复定义
 """
-import requests
-from typing import Optional, List
-import streamlit as st
+from __future__ import annotations
 
-BASE_URL = "http://localhost:8000"
+import requests
+import streamlit as st
+from typing import Optional, List
+
+from config import API_BASE_URL
 
 
 class ApiClient:
     """与后端通信的统一客户端"""
 
     def __init__(self):
-        self.base = BASE_URL
+        self.base = API_BASE_URL
 
     @property
     def token(self) -> Optional[str]:
@@ -25,6 +27,8 @@ class ApiClient:
         if self.token:
             h["Authorization"] = f"Bearer {self.token}"
         return h
+
+    # ──────── 底层请求方法 ────────
 
     def _get(self, path: str, params: dict = None) -> dict | list | None:
         try:
@@ -48,29 +52,38 @@ class ApiClient:
             else:
                 r = requests.post(f"{self.base}{path}", headers=self.headers,
                                   json=data, timeout=10)
-            return r.json() if r.status_code in (200, 201) else {"error": r.json().get("detail", "请求失败")}
+            if r.status_code in (200, 201):
+                return r.json()
+            return {"error": r.json().get("detail", "请求失败")}
         except requests.ConnectionError:
             return {"error": "无法连接后端"}
 
     def _put(self, path: str, data: dict = None) -> dict | None:
         try:
-            r = requests.put(f"{self.base}{path}", headers=self.headers, json=data, timeout=10)
-            return r.json() if r.status_code == 200 else {"error": r.json().get("detail", "请求失败")}
+            r = requests.put(f"{self.base}{path}", headers=self.headers,
+                             json=data, timeout=10)
+            if r.status_code == 200:
+                return r.json()
+            return {"error": r.json().get("detail", "请求失败")}
         except requests.ConnectionError:
             return {"error": "无法连接后端"}
 
     def _delete(self, path: str) -> dict | None:
         try:
             r = requests.delete(f"{self.base}{path}", headers=self.headers, timeout=10)
-            return r.json() if r.status_code == 200 else None
+            if r.status_code == 200:
+                return r.json()
+            return None
         except requests.ConnectionError:
             return None
 
     # ════════════════════════════════
     #  认证
     # ════════════════════════════════
+
     def login(self, username: str, password: str) -> dict:
-        return self._post("/api/auth/login", {"username": username, "password": password})
+        return self._post("/api/auth/login",
+                          {"username": username, "password": password})
 
     def register(self, username: str, password: str, nickname: str = "") -> dict:
         return self._post("/api/auth/register",
@@ -81,8 +94,10 @@ class ApiClient:
 
     def update_me(self, nickname: str = None, avatar: str = None) -> dict:
         data = {}
-        if nickname is not None: data["nickname"] = nickname
-        if avatar is not None: data["avatar"] = avatar
+        if nickname is not None:
+            data["nickname"] = nickname
+        if avatar is not None:
+            data["avatar"] = avatar
         return self._put("/api/auth/me", data)
 
     def change_password(self, old_password: str, new_password: str) -> dict:
@@ -92,11 +107,15 @@ class ApiClient:
     # ════════════════════════════════
     #  猫猫
     # ════════════════════════════════
+
     def list_cats(self, name=None, gender=None, status=None, neutered=None) -> list:
         params = {}
-        if name: params["name"] = name
-        if gender and gender != "全部": params["gender"] = gender
-        if status and status != "全部": params["status"] = status
+        if name:
+            params["name"] = name
+        if gender and gender != "全部":
+            params["gender"] = gender
+        if status and status != "全部":
+            params["status"] = status
         if neutered is not None and neutered != "全部":
             params["neutered"] = neutered == "已绝育"
         return self._get("/api/cats", params) or []
@@ -127,9 +146,11 @@ class ApiClient:
     # ════════════════════════════════
     #  评论
     # ════════════════════════════════
+
     def list_comments(self, cat_id: int = None) -> list:
         params = {}
-        if cat_id: params["cat_id"] = cat_id
+        if cat_id:
+            params["cat_id"] = cat_id
         return self._get("/api/comments", params) or []
 
     def create_comment(self, cat_id: int, content: str) -> dict:
@@ -147,10 +168,14 @@ class ApiClient:
     # ════════════════════════════════
     #  投喂打卡
     # ════════════════════════════════
-    def list_feedings(self, cat_id: int = None, user_id: int = None, limit: int = 50) -> list:
+
+    def list_feedings(self, cat_id: int = None, user_id: int = None,
+                      limit: int = 50) -> list:
         params = {"limit": limit}
-        if cat_id: params["cat_id"] = cat_id
-        if user_id: params["user_id"] = user_id
+        if cat_id:
+            params["cat_id"] = cat_id
+        if user_id:
+            params["user_id"] = user_id
         return self._get("/api/feedings", params) or []
 
     def create_feeding(self, cat_id: int, location: str, food: str) -> dict:
@@ -163,12 +188,14 @@ class ApiClient:
     # ════════════════════════════════
     #  寻猫启事
     # ════════════════════════════════
+
     def list_lost(self) -> list:
         return self._get("/api/lost") or []
 
     def create_lost(self, cat_name: str, description: str, location: str) -> dict:
         return self._post("/api/lost",
-                          {"cat_name": cat_name, "description": description, "location": location})
+                          {"cat_name": cat_name, "description": description,
+                           "location": location})
 
     def mark_found(self, notice_id: int, found_note: str = "") -> dict:
         return self._put(f"/api/lost/{notice_id}/found", {"found_note": found_note})
@@ -176,6 +203,7 @@ class ApiClient:
     # ════════════════════════════════
     #  领养
     # ════════════════════════════════
+
     def list_adoptions(self) -> list:
         return self._get("/api/adoptions") or []
 
@@ -189,11 +217,13 @@ class ApiClient:
     # ════════════════════════════════
     #  救助
     # ════════════════════════════════
+
     def list_rescues(self) -> list:
         return self._get("/api/rescues") or []
 
     def create_rescue(self, location: str, description: str) -> dict:
-        return self._post("/api/rescues", {"location": location, "description": description})
+        return self._post("/api/rescues",
+                          {"location": location, "description": description})
 
     def resolve_rescue(self, rescue_id: int, note: str = "") -> dict:
         return self._put(f"/api/rescues/{rescue_id}/resolve", {"note": note})
@@ -201,11 +231,13 @@ class ApiClient:
     # ════════════════════════════════
     #  公告
     # ════════════════════════════════
+
     def list_announcements(self) -> list:
         return self._get("/api/announcements") or []
 
     def create_announcement(self, title: str, content: str) -> dict:
-        return self._post("/api/announcements", {"title": title, "content": content})
+        return self._post("/api/announcements",
+                          {"title": title, "content": content})
 
     def delete_announcement(self, ann_id: int) -> dict:
         return self._delete(f"/api/announcements/{ann_id}")
@@ -230,16 +262,19 @@ class ApiClient:
     # ════════════════════════════════
     #  领养回访
     # ════════════════════════════════
+
     def list_followups(self) -> list:
         return self._get("/api/followups") or []
 
-    def create_followup(self, cat_id: int, content: str, status: str = "良好") -> dict:
+    def create_followup(self, cat_id: int, content: str,
+                        status: str = "良好") -> dict:
         return self._post("/api/followups",
                           {"cat_id": cat_id, "content": content, "status": status})
 
     # ════════════════════════════════
     #  管理后台
     # ════════════════════════════════
+
     def admin_stats(self) -> dict | None:
         return self._get("/api/admin/stats")
 
