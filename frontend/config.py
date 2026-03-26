@@ -1,7 +1,7 @@
 """全局配置常量"""
 
 # 后端 API 地址
-API_BASE_URL = BACKEND_API
+API_BASE_URL = "https://jaded-unpublic-mignon.ngrok-free.dev"
 #https://jaded-unpublic-mignon.ngrok-free.dev/
 # 页面路由名称
 PAGE_HOME = "🏠 首页"
