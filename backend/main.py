@@ -14,7 +14,6 @@ app = FastAPI(
     description="Campus Cat Backend API",
     version="1.0.0",
 )
-
 # ── CORS 跨域（允许 Streamlit 前端访问）──
 app.add_middleware(
     CORSMiddleware,
