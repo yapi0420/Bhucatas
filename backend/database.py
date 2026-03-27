@@ -20,7 +20,7 @@ engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-
+# 创建数据库会话
 def get_db():
     """FastAPI 依赖注入：获取数据库会话"""
     db = SessionLocal()
