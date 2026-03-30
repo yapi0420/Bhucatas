@@ -7,13 +7,13 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        target: 'http://121.43.27.209:8000',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '')
       },
       // ✅ 新增：代理图片请求到后端
       '/uploads': {
-        target: 'http://localhost:8000',
+        target: 'http://121.43.27.209:8000',
         changeOrigin: true
       }
     }
