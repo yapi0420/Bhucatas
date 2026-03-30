@@ -143,3 +143,37 @@ async def upload_photo(
     db.commit()
     db.refresh(photo)
     return photo
+
+@router.delete("/{cat_id}/photos/{photo_id}")
+async def delete_photo(
+    cat_id: int,
+    photo_id: int,
+    user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """删除猫猫照片"""
+    # 查找照片
+    photo = db.query(models.CatPhoto).filter(
+        models.CatPhoto.id == photo_id,
+        models.CatPhoto.cat_id == cat_id
+    ).first()
+
+    if not photo:
+        raise HTTPException(status_code=404, detail="照片不存在")
+
+    # 只有上传者或管理员可以删除
+    if photo.uploaded_by != user.id and user.role != "admin":
+        raise HTTPException(status_code=403, detail="无权限删除")
+
+    # 删除物理文件
+    if photo.file_path and os.path.exists(photo.file_path):
+        try:
+            os.remove(photo.file_path)
+        except OSError:
+            pass  # 文件不存在也不报错
+
+    # 删除数据库记录
+    db.delete(photo)
+    db.commit()
+
+    return {"message": "删除成功", "id": photo_id}

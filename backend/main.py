@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import os
-
+# import os
 from database import engine, Base
 from init_data import init
 
@@ -26,6 +26,8 @@ app.add_middleware(
 # ── 静态文件服务（猫猫照片）──
 os.makedirs("uploads", exist_ok=True)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
+
 
 # ── 注册所有路由 ──
 from routers import auth, cats, comments, feedings, lost, adoptions
@@ -56,4 +58,4 @@ def startup():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("main:app", host="localhost", port=8000, reload=True)
